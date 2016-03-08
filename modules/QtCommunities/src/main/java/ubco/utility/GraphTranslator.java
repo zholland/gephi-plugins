@@ -2,7 +2,6 @@ package ubco.utility;
 
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.Pair;
 import org.gephi.graph.api.Node;
 import org.gephi.io.importer.api.ContainerLoader;
 import org.gephi.io.importer.api.EdgeDraft;
@@ -10,7 +9,6 @@ import org.gephi.io.importer.api.NodeDraft;
 import ubco.structure.Edge;
 import ubco.structure.Vertex;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,23 +35,39 @@ public class GraphTranslator {
         return graph;
     }
 
-    public static void jungToGephi(ContainerLoader container, org.gephi.graph.api.Graph gephiGraph, Graph<Integer, String> jungGraph) {
+    public static void jungToGephi(ContainerLoader container,
+                                   org.gephi.graph.api.Graph gephiGraph,
+                                   Graph<Integer, String> jungGraph,
+                                   boolean showTransitiveClosures) {
         // create nodes
         Map<Integer, NodeDraft> nodes = new HashMap<>();
-        for (Integer v : jungGraph.getVertices()) {
-            NodeDraft nd = container.getNode(v.toString());
-            nd.setLabel(v.toString());
-            nodes.put(v, nd);
-            container.addNode(nd);
-        }
+        jungGraph.getVertices()
+                .stream()
+                .filter(v -> v != Integer.MAX_VALUE)
+                .forEach(v -> {
+                    NodeDraft nd = container.getNode(v.toString());
+                    nd.setLabel(v.toString());
+                    nodes.put(v, nd);
+                    container.addNode(nd);
+                });
+
+//        if (!showTransitiveClosures) {
+//            computePositions(nodes, gephiGraph);
+//        }
 
         // create edges
-        for (String e : jungGraph.getEdges()) {
-            EdgeDraft ed = container.factory().newEdgeDraft();
-            Pair<Integer> endPoints = jungGraph.getEndpoints(e);
-            ed.setSource(nodes.get(endPoints.getFirst()));
-            ed.setTarget(nodes.get(endPoints.getSecond()));
-            container.addEdge(ed);
-        }
+        jungGraph.getEdges()
+                .stream()
+                .filter(e -> jungGraph.getSource(e) != Integer.MAX_VALUE)
+                .forEach(e -> {
+                    EdgeDraft ed = container.factory().newEdgeDraft();
+                    ed.setSource(nodes.get(jungGraph.getSource(e)));
+                    ed.setTarget(nodes.get(jungGraph.getDest(e)));
+                    container.addEdge(ed);
+                });
     }
+
+//    private static void computePositions(Map<Integer, NodeDraft> nodes, org.gephi.graph.api.Graph gephiGraph) {
+//
+//    }
 }

@@ -2,6 +2,7 @@ package ubco.algorithm;
 
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import ubco.structure.Edge;
 import ubco.structure.Vertex;
 import ubco.utility.PseudoC4P4Counter;
@@ -66,10 +67,10 @@ public class QuasiThresholdMover<V extends Comparable<V>> {
             processed.add(current);
 
             TreeSet<Vertex<V>> neighbors = _graph.getNeighbors(current).stream()
-                    .filter(v -> !processed.contains(v) && (Objects.equals(current.getParent(), v.getParent())
-                            || (pc.score(current, v) <= pc.score(v, v.getParent())
-                            && v.getDepth() <= _graph.findEdge(v, current).getNumTriangles() + 1)))
-                    .collect(Collectors.toCollection(TreeSet::new));
+                                                   .filter(v -> !processed.contains(v) && (Objects.equals(current.getParent(), v.getParent())
+                                                                                                   || (pc.score(current, v) <= pc.score(v, v.getParent())
+                                                                                                               && v.getDepth() <= _graph.findEdge(v, current).getNumTriangles() + 1)))
+                                                   .collect(Collectors.toCollection(TreeSet::new));
 
             Map<Vertex<V>, Integer> parentOccurrences = new HashMap<>();
             neighbors.stream().map(Vertex::getParent).forEach(p -> {
@@ -92,7 +93,7 @@ public class QuasiThresholdMover<V extends Comparable<V>> {
             _graph.getNeighbors(current).stream()
                     .filter(v -> !processed.contains(v))
                     .filter(v -> Objects.equals(current.getParent(), v.getParent())
-                            || (pc.score(current, v) < pc.score(v, v.getParent()) && v.getDepth() < _graph.findEdge(current, v).getNumTriangles() + 1))
+                                         || (pc.score(current, v) < pc.score(v, v.getParent()) && v.getDepth() < _graph.findEdge(current, v).getNumTriangles() + 1))
                     .forEach(v -> {
                         changeParent(v, current);
                         v.setDepth(v.getDepth() + 1);
@@ -173,8 +174,8 @@ public class QuasiThresholdMover<V extends Comparable<V>> {
         initialize();
         computeDepths(_root, 0);
         ArrayList<Vertex<V>> vertices = _graph.getVertices().stream()
-                .filter(vm -> vm != _root)
-                .collect(Collectors.toCollection(ArrayList::new));
+                                                .filter(vm -> vm != _root)
+                                                .collect(Collectors.toCollection(ArrayList::new));
         for (int i = 0; i < 4; i++) {
             Collections.shuffle(vertices);
             vertices.forEach(vm -> {
@@ -230,18 +231,21 @@ public class QuasiThresholdMover<V extends Comparable<V>> {
                 addEdges(v, ancestors, returnGraph);
             });
         } else {
-            _graph.getVertices()
-                    .stream()
-                    .filter(v -> v != _root)
-                    .forEach(v -> {
-                        returnGraph.addVertex(v.getId());
-                        if (v.getParent() != null && v.getParent() != _root) {
-                            returnGraph.addEdge(v.getId() + "-" + v.getParent().getId(), v.getId(), v.getParent().getId());
-                        }
-                    });
+            bfsBuildGraph(returnGraph, _root);
         }
         _graph.removeVertex(_root);
         return returnGraph;
+    }
+
+    private void bfsBuildGraph(Graph<V, String> returnGraph, Vertex<V> current) {
+        if (current.getParent() != _root) {
+            returnGraph.addVertex(current.getId());
+            returnGraph.addEdge(current.getParent().getId() + "-" + current.getId(),
+                    current.getParent().getId(),
+                    current.getId(),
+                    EdgeType.DIRECTED);
+        }
+        current.getChildren().forEach(c -> bfsBuildGraph(returnGraph, c));
     }
 
     private void addEdges(Vertex<V> v, Set<Vertex<V>> ancestors, Graph<V, String> returnGraph) {

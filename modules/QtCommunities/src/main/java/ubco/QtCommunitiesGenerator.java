@@ -13,11 +13,15 @@ import org.openide.util.lookup.ServiceProvider;
 import ubco.algorithm.QuasiThresholdMover;
 import ubco.utility.GraphTranslator;
 
+import javax.swing.*;
+
 @ServiceProvider(service = Generator.class)
 public class QtCommunitiesGenerator implements Generator {
 
     protected ProgressTicket progress;
     protected boolean cancel = false;
+
+    private boolean showTransitiveClosures;
 
     @Override
     public void generate(ContainerLoader container) {
@@ -28,10 +32,10 @@ public class QtCommunitiesGenerator implements Generator {
         graph.readLock();
 
         QuasiThresholdMover<Integer> qtm = new QuasiThresholdMover<>(GraphTranslator.gephiToJung(graph), Integer.MAX_VALUE);
-        edu.uci.ics.jung.graph.Graph<Integer, String> resultGraph = qtm.doQuasiThresholdMover(true);
+        edu.uci.ics.jung.graph.Graph<Integer, String> resultGraph = qtm.doQuasiThresholdMover(showTransitiveClosures);
 
-        container.setEdgeDefault(EdgeDirectionDefault.UNDIRECTED);
-        GraphTranslator.jungToGephi(container, graph, resultGraph);
+        container.setEdgeDefault(showTransitiveClosures ? EdgeDirectionDefault.UNDIRECTED : EdgeDirectionDefault.DIRECTED);
+        GraphTranslator.jungToGephi(container, graph, resultGraph, showTransitiveClosures);
 
         graph.readUnlock();
     }
@@ -41,9 +45,39 @@ public class QtCommunitiesGenerator implements Generator {
         return "Generate QT Communities";
     }
 
+    public void setShowTransitiveClosures(boolean showTransitiveClosures) {
+        this.showTransitiveClosures = showTransitiveClosures;
+    }
+
     @Override
     public GeneratorUI getUI() {
-        return null;
+        return new GeneratorUI() {
+            private QtCommunitiesGeneratorPanel panel;
+            private QtCommunitiesGenerator qtGenerator;
+
+            @Override
+            public JPanel getPanel() {
+                if (panel == null) {
+                    panel = new QtCommunitiesGeneratorPanel();
+                }
+                return panel;
+            }
+
+            @Override
+            public void setup(Generator generator) {
+                qtGenerator = (QtCommunitiesGenerator) generator;
+                if (panel == null) {
+                    panel = new QtCommunitiesGeneratorPanel();
+                }
+            }
+
+            @Override
+            public void unsetup() {
+                ButtonModel buttonModel = panel.getButtonGroup().getSelection();
+                qtGenerator.setShowTransitiveClosures(QtCommunitiesGeneratorPanel.SHOW_COMPLETE_GRAPH.equals(buttonModel.getActionCommand()));
+                panel = null;
+            }
+        };
     }
 
     @Override
