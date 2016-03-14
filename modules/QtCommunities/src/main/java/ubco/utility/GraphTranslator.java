@@ -51,23 +51,46 @@ public class GraphTranslator {
                     container.addNode(nd);
                 });
 
-//        if (!showTransitiveClosures) {
-//            computePositions(nodes, gephiGraph);
-//        }
+        if (!showTransitiveClosures) {
+            computePositions(nodes, gephiGraph);
+            // create edges
+            jungGraph.getEdges()
+                    .stream()
+                    .filter(e -> jungGraph.getSource(e) != Integer.MAX_VALUE)
+                    .forEach(e -> {
+                        EdgeDraft ed = container.factory().newEdgeDraft();
+                        ed.setSource(nodes.get(jungGraph.getSource(e)));
+                        ed.setTarget(nodes.get(jungGraph.getDest(e)));
+                        container.addEdge(ed);
+                    });
+        }
 
-        // create edges
-        jungGraph.getEdges()
-                .stream()
-                .filter(e -> jungGraph.getSource(e) != Integer.MAX_VALUE)
-                .forEach(e -> {
-                    EdgeDraft ed = container.factory().newEdgeDraft();
-                    ed.setSource(nodes.get(jungGraph.getSource(e)));
-                    ed.setTarget(nodes.get(jungGraph.getDest(e)));
-                    container.addEdge(ed);
-                });
     }
 
-//    private static void computePositions(Map<Integer, NodeDraft> nodes, org.gephi.graph.api.Graph gephiGraph) {
+    private static void computePositions(Map<Integer, NodeDraft> nodes, org.gephi.graph.api.Graph gephiGraph) {
+        nodes.values().forEach(n -> {
+            n.setX(0f);
+            n.setY(0f);
+        });
+
+//        nodes.values().forEach(n -> {
+//            Coordinates coordinates = coordinatesMap.get(n);
+//            n.setX(coordinates.x);
+//            n.setY(coordinates.y);
+//        });
+    }
+
+    private static void preOrder(Integer node) {
+
+    }
+
+//    private static class Coordinates {
+//        float x;
+//        float y;
 //
+//        public Coordinates(float x, float y) {
+//            this.x = x;
+//            this.y = y;
+//        }
 //    }
 }
