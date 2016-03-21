@@ -2,6 +2,7 @@ package ubco.utility;
 
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.util.Pair;
 import org.gephi.graph.api.Node;
 import org.gephi.io.importer.api.ContainerLoader;
 import org.gephi.io.importer.api.EdgeDraft;
@@ -51,23 +52,27 @@ public class GraphTranslator {
                     container.addNode(nd);
                 });
 
-//        if (!showTransitiveClosures) {
-//            computePositions(nodes, gephiGraph);
-//        }
-
         // create edges
-        jungGraph.getEdges()
-                .stream()
-                .filter(e -> jungGraph.getSource(e) != Integer.MAX_VALUE)
-                .forEach(e -> {
-                    EdgeDraft ed = container.factory().newEdgeDraft();
-                    ed.setSource(nodes.get(jungGraph.getSource(e)));
-                    ed.setTarget(nodes.get(jungGraph.getDest(e)));
+        if (showTransitiveClosures) {
+            jungGraph.getEdges().forEach(e -> {
+                EdgeDraft ed = container.factory().newEdgeDraft();
+                Pair<Integer> endPoints = jungGraph.getEndpoints(e);
+                if (endPoints.getFirst() != Integer.MAX_VALUE && endPoints.getSecond() != Integer.MAX_VALUE) {
+                    ed.setSource(nodes.get(endPoints.getFirst()));
+                    ed.setTarget(nodes.get(endPoints.getSecond()));
                     container.addEdge(ed);
-                });
+                }
+            });
+        } else {
+            jungGraph.getEdges()
+                    .stream()
+                    .filter(e -> jungGraph.getSource(e) != Integer.MAX_VALUE)
+                    .forEach(e -> {
+                        EdgeDraft ed = container.factory().newEdgeDraft();
+                        ed.setSource(nodes.get(jungGraph.getSource(e)));
+                        ed.setTarget(nodes.get(jungGraph.getDest(e)));
+                        container.addEdge(ed);
+                    });
+        }
     }
-
-//    private static void computePositions(Map<Integer, NodeDraft> nodes, org.gephi.graph.api.Graph gephiGraph) {
-//
-//    }
 }
