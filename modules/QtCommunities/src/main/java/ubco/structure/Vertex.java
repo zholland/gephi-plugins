@@ -3,6 +3,12 @@ package ubco.structure;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+/**
+ * Represents a vertex in a graph.
+ *
+ * @param <T> The type of the id.
+ * @author Zach Holland
+ */
 public class Vertex<T extends Comparable<T>> implements Comparable<Vertex<T>> {
     private T _id;
     private int _degree;
@@ -12,14 +18,33 @@ public class Vertex<T extends Comparable<T>> implements Comparable<Vertex<T>> {
     private ArrayList<Vertex<T>> _children;
     private LinkedList<Vertex<T>> _reportedChildren;
 
+    /**
+     * Creates a vertex with the given id.
+     *
+     * @param id The id of the vertex.
+     */
     public Vertex(T id) {
         this(id, -1);
     }
 
+    /**
+     * Creates a vertex with the given id and degree.
+     *
+     * @param id     The id of the vertex.
+     * @param degree The degree of the vertex.
+     */
     public Vertex(T id, int degree) {
         this(id, degree, null, -1);
     }
 
+    /**
+     * Creates a vertex with the given attributes.
+     *
+     * @param id     The id of the vertex.
+     * @param degree The degree of the vertex.
+     * @param parent The parent vertex of this vertex.
+     * @param depth  The depth of this vertex in the tree structure.
+     */
     public Vertex(T id, int degree, Vertex<T> parent, int depth) {
         _id = id;
         _degree = degree;

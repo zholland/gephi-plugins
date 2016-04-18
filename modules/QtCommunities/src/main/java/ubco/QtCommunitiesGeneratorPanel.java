@@ -3,6 +3,11 @@ package ubco;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Panel that displays the options for the QtCommunitiesGenerator.
+ *
+ * @author Zach Holland
+ */
 public class QtCommunitiesGeneratorPanel extends JPanel {
     public static final String SHOW_COMPLETE_GRAPH = "Show the complete edited graph";
     public static final String SHOW_TREE_ONLY = "Show the tree which highlights the hierarchical structure";

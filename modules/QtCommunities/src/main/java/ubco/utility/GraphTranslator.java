@@ -13,10 +13,22 @@ import ubco.structure.Vertex;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Utility class that translates a graph from the gephi format to jung and vice versa.
+ *
+ * @author Zach Holland
+ */
 public class GraphTranslator {
+    /**
+     * Translates a graph in the Gephi format to a JUNG graph.
+     *
+     * @param gephiGraph The Gephi graph to transform.
+     * @return The JUNG graph.
+     */
     public static Graph<Vertex<Integer>, Edge<String>> gephiToJung(org.gephi.graph.api.Graph gephiGraph) {
         Graph<Vertex<Integer>, Edge<String>> graph = new SparseGraph<>();
 
+        // Create nodes
         Map<Node, Vertex<Integer>> nodes = new HashMap<>();
         for (Node n : gephiGraph.getNodes()) {
             Vertex<Integer> v = new Vertex<>(Integer.valueOf((String) n.getId()));
@@ -24,6 +36,7 @@ public class GraphTranslator {
             graph.addVertex(v);
         }
 
+        // Create edges
         for (org.gephi.graph.api.Edge e : gephiGraph.getEdges()) {
             Node n1 = e.getSource();
             Node n2 = e.getTarget();
@@ -36,11 +49,19 @@ public class GraphTranslator {
         return graph;
     }
 
+    /**
+     * Translates a graph in the JUNG format to a Gephi graph.
+     *
+     * @param container              The Gephi container to place the graph.
+     * @param gephiGraph             The Gephi graph.
+     * @param jungGraph              The JUNG graph to build in Gephi.
+     * @param showTransitiveClosures true builds the entire edited graph, false builds only the tree skeleton.
+     */
     public static void jungToGephi(ContainerLoader container,
                                    org.gephi.graph.api.Graph gephiGraph,
                                    Graph<Integer, String> jungGraph,
                                    boolean showTransitiveClosures) {
-        // create nodes
+        // Create nodes
         Map<Integer, NodeDraft> nodes = new HashMap<>();
         jungGraph.getVertices()
                 .stream()
@@ -52,7 +73,8 @@ public class GraphTranslator {
                     container.addNode(nd);
                 });
 
-        // create edges
+        // Create edges
+        // Choice depends on if entire edited graph is to be displayed or just the tree skeleton
         if (showTransitiveClosures) {
             jungGraph.getEdges().forEach(e -> {
                 EdgeDraft ed = container.factory().newEdgeDraft();
