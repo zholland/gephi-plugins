@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Name: QT Communities
 OpenIDE-Module-Short-Description: Detects communities in a graph by editing the graph to the nearest quasi-threshold graph.
-OpenIDE-Module-Long-Description: Edit this later.
+OpenIDE-Module-Long-Description: Detects communities in a graph by editing the graph to the nearest quasi-threshold graph.
 OpenIDE-Module-Display-Category: Clustering
